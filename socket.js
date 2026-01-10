@@ -54,17 +54,10 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     if (room.players[socket.id]) {
-      room.players[socket.id].x = data.x;
-      room.players[socket.id].y = data.y;
-      room.players[socket.id].angle = data.angle;
-      room.players[socket.id].cRoom = data.cRoom;
+      room.players[socket.id] = data;
 
       // Send update to players IN THIS ROOM ONLY
       socket.to(roomName).emit("update", {
-        id: socket.id,
-        x: data.x,
-        y: data.y,
-        angle: data.angle,
         cRoom: data.cRoom
       });
     }
@@ -103,9 +96,6 @@ function joinRoom(socket, roomName) {
 
   // Create new player inside this specific room
   rooms[roomName].players[socket.id] = {
-    x: 800,
-    y: 800,
-    angle: 0,
     cRoom: roomName
   };
 
@@ -115,9 +105,6 @@ function joinRoom(socket, roomName) {
   // Tell others in this room about the newcomer
   socket.to(roomName).emit("newPlayer", {
     id: socket.id,
-    x: 800,
-    y: 800,
-    angle: 0,
     cRoom: roomName
   });
 

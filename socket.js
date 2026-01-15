@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
     if (!isValidRoomName(roomName)) return;
 
     if (!rooms[roomName]) {
-      rooms[roomName] = { players: {} };
+      rooms[roomName] = { cursors: {} };
       console.log(`Room created: ${roomName}`);
     }
 
@@ -141,9 +141,8 @@ function joinRoom(socket, roomName) {
 
   // Create new player inside this specific room
   rooms[roomName].players[socket.id] = {
-    x: 800,
-    y: 800,
-    angle: 0,
+    x: 0,
+    y: 0,
     cRoom: roomName
   };
 
@@ -153,9 +152,8 @@ function joinRoom(socket, roomName) {
   // Tell others in this room about the newcomer
   socket.to(roomName).emit("newPlayer", {
     id: socket.id,
-    x: 800,
-    y: 800,
-    angle: 0,
+    x: 0,
+    y: 0,
     cRoom: roomName
   });
 

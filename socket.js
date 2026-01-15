@@ -60,7 +60,7 @@ io.on("connection", (socket) => {
   // ------------------------------
   // PLAYER UPDATES MOVEMENT
   // ------------------------------
-  socket.on("updateData", (data) => {
+  socket.on("updateCursor", (data) => {
     let roomName = socket.roomName;
     if (!roomName) return;
 
@@ -69,6 +69,10 @@ io.on("connection", (socket) => {
 
     if (room.players[socket.id]) {
       room.players[socket.id] = {...data};
+      socket.to(roomName).emit("update", {
+        id: socket.id,
+        cursorData: {...data}
+      });
 
       // Send update to players IN THIS ROOM ONLY
       // socket.to(roomName).emit("update", {
@@ -78,10 +82,30 @@ io.on("connection", (socket) => {
       //   angle: data.angle,
       //   cRoom: data.cRoom
       // });
+    }
+  });
+  socket.on("updateData", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
+
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.players[socket.id]) {
+      room.players[socket.id] = {...data};
       socket.to(roomName).emit("update", {
         id: socket.id,
         playerData: {...data}
       });
+
+      // Send update to players IN THIS ROOM ONLY
+      // socket.to(roomName).emit("update", {
+      //   id: socket.id,
+      //   x: data.x,
+      //   y: data.y,
+      //   angle: data.angle,
+      //   cRoom: data.cRoom
+      // });
     }
   });
 

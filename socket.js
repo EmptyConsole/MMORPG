@@ -15,7 +15,17 @@ const PORT = process.env.PORT || 3000;
     }
   }
 */
-let rooms = {};
+// Use a null-prototype object to reduce prototype-pollution risks
+let rooms = Object.create(null);
+
+function isValidRoomName(name) {
+  return (
+    typeof name === "string" &&
+    name.length > 0 &&
+    name !== "__proto__" &&
+    name !== "constructor"
+  );
+}
 
 io.on("connection", (socket) => {
   console.log("Player connected:", socket.id);
@@ -27,6 +37,8 @@ io.on("connection", (socket) => {
   // PLAYER CREATES A ROOM
   // ------------------------------
   socket.on("create_room", (roomName) => {
+    if (!isValidRoomName(roomName)) return;
+
     if (!rooms[roomName]) {
       rooms[roomName] = { players: {} };
       console.log(`Room created: ${roomName}`);
@@ -39,7 +51,9 @@ io.on("connection", (socket) => {
   // PLAYER JOINS A ROOM
   // ------------------------------
   socket.on("join_room", (roomName) => {
+    if (!isValidRoomName(roomName)) return;
     if (!rooms[roomName]) return; // room must exist
+
     joinRoom(socket, roomName);
   });
 
@@ -54,11 +68,19 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     if (room.players[socket.id]) {
-      room.players[socket.id] = data;
+      room.players[socket.id] = {...data};
 
       // Send update to players IN THIS ROOM ONLY
+      // socket.to(roomName).emit("update", {
+      //   id: socket.id,
+      //   x: data.x,
+      //   y: data.y,
+      //   angle: data.angle,
+      //   cRoom: data.cRoom
+      // });
       socket.to(roomName).emit("update", {
-        cRoom: data.cRoom
+        id: socket.id,
+        playerData: {...data}
       });
     }
   });
@@ -91,11 +113,37 @@ io.on("connection", (socket) => {
 // HELPER: Handle joining + initial state
 // ==================================================
 function joinRoom(socket, roomName) {
+  // If the socket was in another room, remove it cleanly first
+  //idk if this is nescesary:
+  if (socket.roomName && socket.roomName !== roomName) {
+    const prev = socket.roomName;
+    try {
+      socket.leave(prev);
+    } catch (e) {}
+
+    if (rooms[prev] && rooms[prev].players && rooms[prev].players[socket.id]) {
+      delete rooms[prev].players[socket.id];
+      socket.to(prev).emit("removePlayer", socket.id);
+
+      if (Object.keys(rooms[prev].players).length === 0) {
+        delete rooms[prev];
+        console.log(`Room deleted: ${prev}`);
+      }
+
+      // Update lobby about the room change
+      io.emit("rooms_list", rooms);
+    }
+  }
+
+  //good after here
   socket.join(roomName);
   socket.roomName = roomName;
 
   // Create new player inside this specific room
   rooms[roomName].players[socket.id] = {
+    x: 800,
+    y: 800,
+    angle: 0,
     cRoom: roomName
   };
 
@@ -105,6 +153,9 @@ function joinRoom(socket, roomName) {
   // Tell others in this room about the newcomer
   socket.to(roomName).emit("newPlayer", {
     id: socket.id,
+    x: 800,
+    y: 800,
+    angle: 0,
     cRoom: roomName
   });
 

@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
     if (!isValidRoomName(roomName)) return;
 
     if (!rooms[roomName]) {
-      rooms[roomName] = { cursors: {} };
+      rooms[roomName] = { players: {} };
       console.log(`Room created: ${roomName}`);
     }
 

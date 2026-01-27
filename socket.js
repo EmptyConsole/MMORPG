@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
 
     if (room.players[socket.id]) {
       room.players[socket.id] = {...data};
-      socket.to(roomName).emit("update", {
+      socket.to(roomName).emit("updateP", {
         id: socket.id,
         playerData: {...data}
       });

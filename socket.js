@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
     if (!isValidRoomName(roomName)) return;
 
     if (!rooms[roomName]) {
-      rooms[roomName] = { players: {} };
+      rooms[roomName] = { players: {} , blocks: {} };
       console.log(`Room created: ${roomName}`);
     }
 
@@ -73,15 +73,21 @@ io.on("connection", (socket) => {
         id: socket.id,
         cursorData: {...data}
       });
+    }
+  });
+  socket.on("updateBlocks", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
 
-      // Send update to players IN THIS ROOM ONLY
-      // socket.to(roomName).emit("update", {
-      //   id: socket.id,
-      //   x: data.x,
-      //   y: data.y,
-      //   angle: data.angle,
-      //   cRoom: data.cRoom
-      // });
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.blocks[socket.id]) {
+      room.blocks[socket.id] = {...data};
+      socket.to(roomName).emit("updateBl", {
+        id: socket.id,
+        blockData: {...data}
+      });
     }
   });
   socket.on("updateData", (data) => {
@@ -97,15 +103,6 @@ io.on("connection", (socket) => {
         id: socket.id,
         playerData: {...data}
       });
-
-      // Send update to players IN THIS ROOM ONLY
-      // socket.to(roomName).emit("update", {
-      //   id: socket.id,
-      //   x: data.x,
-      //   y: data.y,
-      //   angle: data.angle,
-      //   cRoom: data.cRoom
-      // });
     }
   });
 

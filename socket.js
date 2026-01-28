@@ -90,6 +90,21 @@ io.on("connection", (socket) => {
       });
     }
   });
+  socket.on("updateChat", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
+
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.messages[socket.id]) {
+      room.messages[socket.id] = {...data};
+      socket.to(roomName).emit("updateCh", {
+        id: socket.id,
+        chatData: {...data}
+      });
+    }
+  });
   socket.on("updateBullet", (data) => {
     let roomName = socket.roomName;
     if (!roomName) return;

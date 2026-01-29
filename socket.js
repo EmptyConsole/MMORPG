@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
     if (!isValidRoomName(roomName)) return;
 
     if (!rooms[roomName]) {
-      rooms[roomName] = { players: {} , blocks: {} };
+      rooms[roomName] = { players: {}, blocks: {} };
       console.log(`Room created: ${roomName}`);
     }
 
@@ -68,10 +68,10 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     if (room.players[socket.id]) {
-      room.players[socket.id] = {...data};
+      room.players[socket.id] = { ...data };
       socket.to(roomName).emit("update", {
         id: socket.id,
-        cursorData: {...data}
+        cursorData: { ...data },
       });
     }
   });
@@ -83,25 +83,26 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     if (room.blocks[socket.id]) {
-      room.blocks[socket.id] = {...data};
+      room.blocks[socket.id] = { ...data };
       socket.to(roomName).emit("updateBl", {
         id: socket.id,
-        blockData: {...data}
+        blockData: { ...data },
       });
     }
   });
   socket.on("updateChat", (data) => {
+    // socket.userId = crypto.randomUUID();
     let roomName = socket.roomName;
     if (!roomName) return;
 
     let room = rooms[roomName];
     if (!room) return;
-
-    if (room.messages[data.index]) {
-      room.messages[data.index] = {...data};
+    let cid = Object.keys(data)[0];
+    if (room.messages[cid]) {
+      room.messages[cid] = { ...data };
       socket.to(roomName).emit("updateCh", {
         id: socket.id,
-        chatData: {...data}
+        chatData: { ...data },
       });
     }
   });
@@ -113,10 +114,10 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     if (room.players[socket.id]) {
-      room.players[socket.id] = {...data};
+      room.players[socket.id] = { ...data };
       socket.to(roomName).emit("updateB", {
         id: socket.id,
-        bulletData: {...data}
+        bulletData: { ...data },
       });
     }
   });
@@ -128,10 +129,10 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     if (room.players[socket.id]) {
-      room.players[socket.id] = {...data};
+      room.players[socket.id] = { ...data };
       socket.to(roomName).emit("updateP", {
         id: socket.id,
-        playerData: {...data}
+        playerData: { ...data },
       });
     }
   });
@@ -194,7 +195,7 @@ function joinRoom(socket, roomName) {
   rooms[roomName].players[socket.id] = {
     x: 0,
     y: 0,
-    cRoom: roomName
+    cRoom: roomName,
   };
 
   // Send existing players in this room to the newcomer
@@ -205,7 +206,7 @@ function joinRoom(socket, roomName) {
     id: socket.id,
     x: 0,
     y: 0,
-    cRoom: roomName
+    cRoom: roomName,
   });
 
   // Update rooms list for lobby

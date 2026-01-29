@@ -82,8 +82,8 @@ io.on("connection", (socket) => {
     let room = rooms[roomName];
     if (!room) return;
 
-    if (room.blocks[socket.id]) {
-      room.blocks[socket.id] = { ...data };
+    if (room.players[socket.id]) {
+      room.players[socket.id] = { ...data };
       socket.to(roomName).emit("updateBl", {
         id: socket.id,
         blockData: { ...data },

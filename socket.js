@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
     if (room.messages[socket.id]) {
       room.messages[socket.id] = {...data};
       socket.to(roomName).emit("updateCh", {
-        id: socket.id,
+        id: data.index,
         chatData: {...data}
       });
     }

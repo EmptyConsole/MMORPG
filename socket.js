@@ -97,10 +97,10 @@ io.on("connection", (socket) => {
     let room = rooms[roomName];
     if (!room) return;
 
-    if (room.messages[socket.id]) {
-      room.messages[socket.id] = {...data};
+    if (room.messages[data.index]) {
+      room.messages[data.index] = {...data};
       socket.to(roomName).emit("updateCh", {
-        id: data.index,
+        id: socket.id,
         chatData: {...data}
       });
     }

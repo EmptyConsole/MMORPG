@@ -91,15 +91,14 @@ io.on("connection", (socket) => {
     }
   });
   socket.on("updateChat", (data) => {
-    // socket.userId = crypto.randomUUID();
     let roomName = socket.roomName;
     if (!roomName) return;
 
     let room = rooms[roomName];
     if (!room) return;
-    let cid = Object.keys(data)[0];
-    if (room.messages[cid]) {
-      room.messages[cid] = { ...data };
+
+    if (room.players[socket.id]) {
+      room.players[socket.id] = { ...data };
       socket.to(roomName).emit("updateCh", {
         id: socket.id,
         chatData: { ...data },

@@ -105,6 +105,21 @@ io.on("connection", (socket) => {
       });
     }
   });
+  socket.on("updateDamage", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
+
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.players[socket.id]) {
+      room.players[socket.id] = { ...data };
+      socket.to(roomName).emit("updateD", {
+        id: socket.id,
+        damageData: { ...data },
+      });
+    }
+  });
   socket.on("updateBullet", (data) => {
     let roomName = socket.roomName;
     if (!roomName) return;

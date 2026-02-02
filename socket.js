@@ -120,6 +120,21 @@ io.on("connection", (socket) => {
       });
     }
   });
+  socket.on("removeBullet", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
+
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.players[socket.id]) {
+      room.players[socket.id] = { ...data };
+      socket.to(roomName).emit("updateRb", {
+        id: socket.id,
+        bulletData: { ...data },
+      });
+    }
+  });
   socket.on("updateBullet", (data) => {
     let roomName = socket.roomName;
     if (!roomName) return;

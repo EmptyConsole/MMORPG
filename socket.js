@@ -165,6 +165,21 @@ io.on("connection", (socket) => {
       });
     }
   });
+  socket.on("getRooms", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
+
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.players[socket.id]) {
+      room.players[socket.id] = { ...data };
+      socket.to(roomName).emit("gotRooms", {
+        id: socket.id,
+        roomData: rooms,
+      });
+    }
+  });
 
   // ------------------------------
   // DISCONNECT HANDLING

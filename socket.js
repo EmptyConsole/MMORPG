@@ -165,6 +165,22 @@ io.on("connection", (socket) => {
       });
     }
   });
+  //updates the waiting room with the current player data, so that when a new player joins they get the most recent data
+  socket.on("updateWait", (data) => {
+    let roomName = socket.roomName;
+    if (!roomName) return;
+
+    let room = rooms[roomName];
+    if (!room) return;
+
+    if (room.players[socket.id]) {
+      room.players[socket.id] = { ...data };
+      socket.to(roomName).emit("updateW", {
+        id: socket.id,
+        waitData: { ...data },
+      });
+    }
+  });
   socket.on("getRooms", (data) => {
     let roomName = socket.roomName;
     if (!roomName) return;

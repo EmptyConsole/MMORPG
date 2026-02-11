@@ -36,15 +36,15 @@ io.on("connection", (socket) => {
   // ------------------------------
   // PLAYER CREATES A ROOM
   // ------------------------------
-  socket.on("create_room", (roomName) => {
-    if (!isValidRoomName(roomName)) return;
+  socket.on("create_room", (roomData) => {
+    if (!isValidRoomName(roomData)) return;
 
-    if (!rooms[roomName]) {
-      rooms[roomName] = { players: {}, blocks: {} };
-      console.log(`Room created: ${roomName}`);
+    if (!rooms[roomData.name]) {
+      rooms[roomData.name] = { players: {}, blocks: {},type: roomData?.type ?? "custom" };
+      console.log(`Room created: ${roomData.name}`);
     }
 
-    joinRoom(socket, roomName);
+    joinRoom(socket, roomData.name);
   });
 
   // ------------------------------

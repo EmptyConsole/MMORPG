@@ -209,7 +209,7 @@ io.on("connection", (socket) => {
    }
  });
  socket.on("getRooms", (data) => {
-     socket.to(roomName).emit("gotRooms", {
+     socket.to("NONE").emit("gotRooms", {
        id: socket.id,
        roomData: {...rooms},
      });

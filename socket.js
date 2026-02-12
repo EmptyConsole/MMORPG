@@ -43,9 +43,11 @@ io.on("connection", (socket) => {
  // PLAYER CREATES A ROOM
  // ------------------------------
  socket.on("create_room", (roomData) => {
-   if (!isValidRoomName(roomData)) return;
-
-
+  roomData.name = roomData.name+"";
+  let name = roomData.name;
+  //console.log(typeof name === "string" ,name.length > 0 ,name !== "__proto__" ,name !== "constructor",);
+   if (!isValidRoomName(roomData.name)) return;
+  // console.log("hi");
    if (!rooms[roomData.name]) {
      rooms[roomData.name] = { players: {}, blocks: {},type: roomData?.type ?? "custom",started: false, startingPlayers: {}};
      console.log(`Room created: ${roomData.name}`);
@@ -163,8 +165,6 @@ io.on("connection", (socket) => {
 
    let room = rooms[roomName];
    if (!room) return;
-
-
    if (room.players[socket.id]) {
      room.players[socket.id] = { ...data };
      socket.to(roomName).emit("updateB", {
@@ -209,7 +209,7 @@ io.on("connection", (socket) => {
    }
  });
  socket.on("getRooms", (data) => {
-  console.log(socket.roomName,rooms);
+  //console.log(socket.roomName,rooms,Object.keys(rooms));
      socket.to(socket.roomName).emit("gotRooms", {
        id: socket.id,
        roomData: {...rooms},

@@ -55,12 +55,14 @@ io.on("connection", (socket) => {
  socket.on("create_room", (roomData) => {
   roomData.name = roomData.name+"";
   let name = roomData.name;
+  if(name!="NO ROOM"){
   lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,1000,name)};
+  }
   //console.log(typeof name === "string" ,name.length > 0 ,name !== "__proto__" ,name !== "constructor",);
    if (!isValidRoomName(roomData.name)) return;
   // console.log("hi");
    if (!rooms[roomData.name]) {
-     rooms[roomData.name] = { players: {}, blocks: {},type: roomData?.type ?? "custom",started: false, startingPlayers: {}};
+     rooms[roomData.name] = { players: {}, blocks: {},type: roomData?.type ?? "custom",started: false, startingPlayers: {},worldBorder: 500,};
      console.log(`Room created: ${roomData.name}`);
    }
 

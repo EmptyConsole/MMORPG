@@ -5,7 +5,7 @@ const io = require("socket.io")(http, { cors: { origin: "*" } });
 
 
 const PORT = process.env.PORT || 3000;
-
+var lobbyTicks = {};
 
 /*
  ROOMS STRUCTURE:
@@ -29,7 +29,17 @@ function isValidRoomName(name) {
    name !== "constructor"
  );
 }
-
+function intervalTick(name){
+  console.log("Interval Tick For Room:", name);
+  for(let id in lobbyTicks){
+    if(!Object.keys(rooms).includes(id)){
+      console.log("Deleting Lobby Ticker:", id);
+      clearInterval(lobbyTicks[id]?.interval);
+      delete lobbyTicks[id];
+      console.log("Removed Lobby Ticker", id);
+    }
+  }
+}
 
 io.on("connection", (socket) => {
  console.log("Player connected:", socket.id);
@@ -45,6 +55,7 @@ io.on("connection", (socket) => {
  socket.on("create_room", (roomData) => {
   roomData.name = roomData.name+"";
   let name = roomData.name;
+  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,1000,name)};
   //console.log(typeof name === "string" ,name.length > 0 ,name !== "__proto__" ,name !== "constructor",);
    if (!isValidRoomName(roomData.name)) return;
   // console.log("hi");

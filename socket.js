@@ -30,7 +30,23 @@ function isValidRoomName(name) {
  );
 }
 function intervalTick(name){
-  console.log("Interval Tick For Room:", name);
+  if(lobbyTicks[name]){
+  lobbyTicks[name].untilStart-=100;
+  if(lobbyTicks[name].untilStart<=0){
+    lobbyTicks[name].started = true;
+    if(rooms[name]?.startingPlayers){
+    lobbyTicks[name].startingPlayers = {...rooms[name].startingPlayers};
+    }
+    console.log(lobbyTicks[name].startingPlayers)
+  }
+  if(lobbyTicks[name].started){
+    lobbyTicks[name].gameTime+=100;
+    if(lobbyTicks[name].gameTime%10000==0&&lobbyTicks[name].borderRadius>1000){
+      lobbyTicks[name].borderRadius-=250;
+    }
+  }
+  //socket.to(socket.roomName).emit("gameTick",lobbyTicks[name]);
+  }
   for(let id in lobbyTicks){
     if(!Object.keys(rooms).includes(id)){
       console.log("Deleting Lobby Ticker:", id);
@@ -56,13 +72,13 @@ io.on("connection", (socket) => {
   roomData.name = roomData.name+"";
   let name = roomData.name;
   if(name!="NO ROOM"){
-  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,1000,name)};
+  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,100,name),started:false,untilStart: 15000,startingPlayers: {},borderRadius: 5000,gameTime: 0};
   }
   //console.log(typeof name === "string" ,name.length > 0 ,name !== "__proto__" ,name !== "constructor",);
    if (!isValidRoomName(roomData.name)) return;
   // console.log("hi");
    if (!rooms[roomData.name]) {
-     rooms[roomData.name] = { players: {}, blocks: {},type: roomData?.type ?? "custom",started: false, startingPlayers: {},worldBorder: 500,};
+     rooms[roomData.name] = { players: {}, blocks: {},type: roomData?.type ?? "custom",started: false, startingPlayers: {},worldBorder: 5000,};
      console.log(`Room created: ${roomData.name}`);
    }
 
@@ -82,7 +98,22 @@ io.on("connection", (socket) => {
    joinRoom(socket, roomName);
  });
 
-
+ socket.on("fetchTick", (data) => {
+   let roomName = socket.roomName;
+   if (!roomName) return;
+   let room = rooms[roomName];
+   if (!room) return;
+   let givenTickData = {...lobbyTicks[roomName]};
+   delete givenTickData.interval;
+   //console.log(`Sent to: ${roomName} for ${socket.id}`)
+     socket.emit("tickData", {
+       id: socket.id,
+       tickData: givenTickData,
+       roomData: room
+     });
+     //console.log(`Sent!`)
+     //console.log(`-~-~-~-~-~-~-~-~-~`)
+ });
  // ------------------------------
  // PLAYER UPDATES MOVEMENT
  // ------------------------------
@@ -96,7 +127,6 @@ io.on("connection", (socket) => {
 
 
    if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
      socket.to(roomName).emit("update", {
        id: socket.id,
        cursorData: { ...data },
@@ -113,7 +143,6 @@ io.on("connection", (socket) => {
 
 
    if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
      socket.to(roomName).emit("updateBl", {
        id: socket.id,
        blockData: { ...data },
@@ -130,7 +159,6 @@ io.on("connection", (socket) => {
 
 
    if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
      socket.to(roomName).emit("updateCh", {
        id: socket.id,
        chatData: { ...data },
@@ -147,7 +175,6 @@ io.on("connection", (socket) => {
 
 
    if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
      socket.to(roomName).emit("updateD", {
        id: socket.id,
        damageData: { ...data },
@@ -164,7 +191,6 @@ io.on("connection", (socket) => {
 
 
    if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
      socket.to(roomName).emit("updateRb", {
        id: socket.id,
        bulletData: { ...data },
@@ -179,7 +205,6 @@ io.on("connection", (socket) => {
    let room = rooms[roomName];
    if (!room) return;
    if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
      socket.to(roomName).emit("updateB", {
        id: socket.id,
        bulletData: { ...data },
@@ -203,27 +228,9 @@ io.on("connection", (socket) => {
      });
    }
  });
- //updates the waiting room with the current player data, so that when a new player joins they get the most recent data
- socket.on("updateWait", (data) => {
-   let roomName = socket.roomName;
-   if (!roomName) return;
-
-
-   let room = rooms[roomName];
-   if (!room) return;
-
-
-   if (room.players[socket.id]) {
-     room.players[socket.id] = { ...data };
-     socket.to(roomName).emit("updateW", {
-       id: socket.id,
-       waitData: { ...data },
-     });
-   }
- });
  socket.on("getRooms", (data) => {
   //console.log(socket.roomName,rooms,Object.keys(rooms));
-     socket.to(socket.roomName).emit("gotRooms", {
+     socket.emit("gotRooms", {
        id: socket.id,
        roomData: {...rooms},
      });
@@ -302,7 +309,6 @@ function joinRoom(socket, roomName) {
  rooms[roomName].players[socket.id] = addedData;
 }
 rooms[roomName].startingPlayers[socket.id] = addedData;
-
 
  // Send existing players in this room to the newcomer
  socket.emit("initialState", rooms[roomName].players);

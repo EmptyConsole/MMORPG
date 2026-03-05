@@ -37,7 +37,7 @@ function intervalTick(name){
     if(rooms[name]?.startingPlayers){
     lobbyTicks[name].startingPlayers = {...rooms[name].startingPlayers};
     }
-    console.log(lobbyTicks[name].startingPlayers)
+   // console.log(lobbyTicks[name].startingPlayers)
   }
   if(lobbyTicks[name].started){
     lobbyTicks[name].gameTime+=100;

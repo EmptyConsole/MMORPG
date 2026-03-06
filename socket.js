@@ -31,7 +31,9 @@ function isValidRoomName(name) {
 }
 function intervalTick(name){
   if(lobbyTicks[name]){
+    if(Object.keys(rooms[name]?.startingPlayers)?.length>=4){
   lobbyTicks[name].untilStart-=100;
+    }
   if(lobbyTicks[name].untilStart<=0){
     lobbyTicks[name].started = true;
     if(rooms[name]?.startingPlayers){
@@ -72,7 +74,7 @@ io.on("connection", (socket) => {
   roomData.name = roomData.name+"";
   let name = roomData.name;
   if(name!="NO ROOM"){
-  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,100,name),started:false,untilStart: 15000,startingPlayers: {},borderRadius: 5000,gameTime: 0};
+  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,100,name),started:false,untilStart: 10000,startingPlayers: {},borderRadius: 5000,gameTime: 0};
   }
   //console.log(typeof name === "string" ,name.length > 0 ,name !== "__proto__" ,name !== "constructor",);
    if (!isValidRoomName(roomData.name)) return;

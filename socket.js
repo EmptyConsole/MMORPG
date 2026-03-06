@@ -31,7 +31,7 @@ function isValidRoomName(name) {
 }
 function intervalTick(name){
   if(lobbyTicks[name]){
-    if(Object.keys(rooms[name]?.startingPlayers)?.length>=4){
+    if(Object.keys(rooms[name].startingPlayers).length>=4){
   lobbyTicks[name].untilStart-=100;
     }
   if(lobbyTicks[name].untilStart<=0){

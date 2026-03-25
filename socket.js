@@ -31,8 +31,9 @@ function isValidRoomName(name) {
 }
 function intervalTick(name){
   if(lobbyTicks[name]){
+    lobbyTicks[name].untilAuto+=100;
     if(rooms[name]?.startingPlayers){
-    if(Object.keys(rooms[name].startingPlayers).length>=4){
+    if(Object.keys(rooms[name].players).length>=2||(lobbyTicks[name].untilAuto>=15000&&Object.keys(rooms[name].players).length>=2)){
   lobbyTicks[name].untilStart-=100;
     }
   }
@@ -76,7 +77,7 @@ io.on("connection", (socket) => {
   roomData.name = roomData.name+"";
   let name = roomData.name;
   if(name!="NO ROOM"){
-  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,100,name),started:false,untilStart: 10000,startingPlayers: {},borderRadius: 5000,gameTime: 0};
+  lobbyTicks[name] = {code: name, interval: setInterval(intervalTick,100,name),started:false,untilStart: 10000,startingPlayers: {},borderRadius: 5000,gameTime: 0,untilAuto: 0};
   }
   //console.log(typeof name === "string" ,name.length > 0 ,name !== "__proto__" ,name !== "constructor",);
    if (!isValidRoomName(roomData.name)) return;
